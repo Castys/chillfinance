@@ -56,78 +56,15 @@ class StorageManager {
   static getDb() {
     const db = localStorage.getItem(DB_KEY);
     if (!db) {
-      // Buat data demo jika DB kosong
-      const demoDb = {
-        users: {
-          putra: {
-            username: "Putra",
-            password: "password123",
-            saldo_utama: 1500000,
-            targets: {
-              "Laptop Baru": {
-                target: 10000000,
-                saldo: 2500000,
-                status: "aktif",
-                riwayat: [
-                  [
-                    new Date("2025-11-03T10:00:00").toISOString(),
-                    "nabung",
-                    2500000,
-                    "Tabungan awal",
-                  ],
-                ],
-                last_withdraw: null,
-              },
-              "Liburan Jepang": {
-                target: 20000000,
-                saldo: 500000,
-                status: "aktif",
-                riwayat: [
-                  [
-                    new Date("2025-11-08T14:30:00").toISOString(),
-                    "nabung",
-                    500000,
-                    "Bonus",
-                  ],
-                ],
-                last_withdraw: null,
-              },
-              "Dana Darurat": {
-                target: 5000000,
-                saldo: 5000000,
-                status: "selesai",
-                riwayat: [
-                  [
-                    new Date("2025-10-14T09:00:00").toISOString(),
-                    "nabung",
-                    5000000,
-                    "Full",
-                  ],
-                ],
-                last_withdraw: null,
-              },
-            },
-            riwayat: [
-              [
-                new Date("2025-11-12T13:00:00").toISOString(),
-                "nabung",
-                2000000,
-                "Gaji",
-              ],
-              [
-                new Date("2025-11-13T10:15:00").toISOString(),
-                "keluar",
-                500000,
-                "Bayar kos",
-              ],
-            ],
-            created_at: new Date().toISOString(),
-          },
-        },
+      // ==========================================================
+      // REVISI: Data demo dihapus. Mulai dengan DB kosong.
+      // ==========================================================
+      const emptyDb = {
+        users: {}, // Database pengguna kosong
       };
-      localStorage.setItem(DB_KEY, JSON.stringify(demoDb));
-      console.log("Database demo untuk 'Putra' dibuat.");
-      return demoDb;
+      localStorage.setItem(DB_KEY, JSON.stringify(emptyDb));
+      console.log("Database kosong baru dibuat.");
+      return emptyDb;
     }
     return JSON.parse(db);
   }
@@ -1132,7 +1069,7 @@ addCharCounter("pengeluaran-catatan", "pengeluaran-catatan-count", 120);
 // ===============================
 
 function initApp() {
-  StorageManager.getDb(); // Panggil sekali untuk memastikan data demo ada jika DB kosong
+  StorageManager.getDb(); // Panggil sekali untuk memastikan DB (kosong) ada
   currentUser = StorageManager.getUserData();
 
   if (currentUser) {
