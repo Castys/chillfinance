@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ChillFinance - Nabung Gen Z</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+
+    <style type="text/tailwindcss">
+      body {
+        font-family: "Inter", sans-serif;
+      }
+      /* Sembunyikan panah di input number */
+      input[type="number"]::-webkit-inner-spin-button,
+      input[type="number"]::-webkit-outer-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
+      input[type="number"] {
+        -moz-appearance: textfield;
+      }
+
+      .tab-content {
+        display: none;
+      }
+
+      .tab-content.active {
+        display: block;
+        animation: fadeIn 0.3s ease-out;
+      }
+
+      /* Animasi Modal & Toast */
+      .modal {
+        display: none; /* Sembunyi secara default */
+        animation: fadeIn 0.2s ease-out;
+      }
+      .modal.active {
+        display: flex; /* Ditampilkan oleh JS */
+      }
+      .modal-content {
+        animation: slideUp 0.3s ease-out;
+      }
+
+      .toast {
+        display: none; /* Sembunyi secara default */
+        animation: slideInDown 0.3s ease-out;
+      }
+      .toast.active {
+        display: block; /* Ditampilkan oleh JS */
+      }
+
+      /* Animasi Halaman */
+      .page,
+      .auth-page {
+        display: none;
+        animation: fadeIn 0.3s ease-out;
+      }
+      .page.active,
+      .auth-page.active {
+        display: block;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+      @keyframes slideUp {
+        from {
+          transform: translateY(20px);
+          opacity: 0.5;
+        }
+        to {
+          transform: translateY(0);
+          opacity: 1;
+        }
+      }
+      @keyframes slideInDown {
+        from {
+          transform: translateY(-30px);
+          opacity: 0;
+        }
+        to {
+          transform: translateY(0);
+          opacity: 1;
+        }
+      }
+
+      /* Status Nav-btn (Mobile) */
+      .nav-btn.active {
+        color: #22d3ee; /* text-cyan-400 */
+      }
+      /* Style desktop untuk nav-btn aktif */
+      @media (min-width: 768px) {
+        .nav-btn.active {
+          background-color: #374151; /* bg-gray-700 */
+          color: #22d3ee; /* text-cyan-400 */
+        }
+      }
+
+      /* Status Tab */
+      .tab-btn.active {
+        color: #22d3ee; /* text-cyan-400 */
+        border-bottom-color: #22d3ee; /* border-cyan-400 */
+      }
+    </style>
+  </head>
+  <body class="bg-gray-950 text-gray-100">
+    <div id="app">
+      <div id="auth-container" class="min-h-screen p-4">
+        <div
+          id="login-page"
+          class="auth-page active pt-12 space-y-6 max-w-lg mx-auto"
+        >
+          <h1 class="text-4xl font-bold text-center text-cyan-400">
+            💸 ChillFinance
+          </h1>
+          <p class="text-center text-lg text-gray-400">
+            Selamat datang kembali!
+          </p>
+
+          <form id="login-form" class="space-y-4">
+            <div>
+              <label
+                for="login-username"
+                class="block text-sm font-medium text-gray-300 mb-1"
+                >Username</label
+              >
+              <input
+                type="text"
+                id="login-username"
+                value="Putra"
+                class="w-full bg-gray-800 border border-gray-700 text-gray-100 rounded-lg p-3 focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500"
+                placeholder="Username Anda"
+                required
+              />
+            </div>
+            <div>
+              <label
+                for="login-password"
+                class="block text-sm font-medium text-gray-300 mb-1"
+                >Password</label
+              >
+              <input
+                type="password"
+                id="login-password"
+                value="password123"
+                class="w-full bg-gray-800 border border-gray-700 text-gray-100 rounded-lg p-3 focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500"
+                placeholder="Password Anda"
+                required
+              />
+            </div>
+            <button
+              type="submit"
+              class="w-full bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-3 px-4 rounded-lg shadow-lg transition-transform transform hover:scale-105"
+            >
+              🔑 Login
+            </button>
+          </form>
+
+          <p class="text-center text-gray-400">
+            Belum punya akun?
+            <button
+              id="btn-show-register"
+              class="font-medium text-cyan-400 hover:text-cyan-300"
+            >
+              Register di sini
+            </button>
+          </p>
+        </div>
+
+        <div
+          id="register-page"
+          class="auth-page pt-12 space-y-6 max-w-lg mx-auto"
+        >
+          <h1 class="text-4xl font-bold text-center text-cyan-400">
+            📝 Register Akun
+          </h1>
+          <p class="text-center text-lg text-gray-400">Buat akun baru Anda.</p>
+
+          <form id="register-form" class="space-y-4">
+            <div class="space-y-2">
+              <label
+                for="register-username"
+                class="block text-sm font-medium text-gray-300 mb-1"
+                >Username</label
+              >
+              <input
+                type="text"
+                id="register-username"
+                class="w-full bg-gray-800 border border-gray-700 text-gray-100 rounded-lg p-3 focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500"
+                placeholder="Min 3 karakter (a-z, 0-9, _, -)"
+                required
+              />
+              <small id="username-error" class="text-red-400 h-4 block"></small>
+            </div>
+            <div class="space-y-2">
+              <label
+                for="register-password"
+                class="block text-sm font-medium text-gray-300 mb-1"
+                >Password</label
+              >
+              <input
+                type="password"
+                id="register-password"
+                class="w-full bg-gray-800 border border-gray-700 text-gray-100 rounded-lg p-3 focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500"
+                placeholder="Minimal 6 karakter"
+                required
+              />
+              <small id="password-error" class="text-red-400 h-4 block"></small>
+            </div>
+            <div class="space-y-2">
+              <label
+                for="register-confirm"
+                class="block text-sm font-medium text-gray-300 mb-1"
+                >Konfirmasi Password</label
+              >
+              <input
+                type="password"
+                id="register-confirm"
+                class="w-full bg-gray-800 border border-gray-700 text-gray-100 rounded-lg p-3 focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500"
+                placeholder="Ulangi password"
+                required
+              />
+              <small id="confirm-error" class="text-red-400 h-4 block"></small>
+            </div>
+            <button
+              type="submit"
+              class="w-full bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-3 px-4 rounded-lg shadow-lg transition-transform transform hover:scale-105"
+            >
+              ✅ Buat Akun
+            </button>
+          </form>
+
+          <p class="text-center text-gray-400">
+            Sudah punya akun?
+            <button
+              id="btn-show-login"
+              class="font-medium text-cyan-400 hover:text-cyan-300"
+            >
+              Login di sini
+            </button>
+          </p>
+        </div>
+      </div>
+
+      <div
+        id="main-app"
+        class="hidden flex flex-col h-screen md:grid md:grid-cols-[260px_1fr] md:grid-rows-[auto_1fr]"
+      >
+        <header
+          class="bg-gray-900 sticky top-0 z-40 border-b border-gray-700 md:col-span-2"
+        >
+          <div
+            class="max-w-lg mx-auto p-4 flex justify-between items-center md:max-w-none md:px-6"
+          >
+            <div>
+              <h2 id="username-display" class="text-xl font-bold text-white">
+                Hi, User!
+              </h2>
+              <p class="text-sm text-gray-400" id="date-display"></p>
+            </div>
+            <button
+              id="logout-btn"
+              class="text-gray-400 hover:text-red-400 p-2 rounded-lg transition-colors"
+            >
+              <svg
+                class="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                ></path>
+              </svg>
+            </button>
+          </div>
+        </header>
+
+        <nav
+          class="fixed bottom-0 left-0 right-0 bg-gray-800 border-t border-gray-700 z-40 md:relative md:flex md:flex-col md:row-start-2 md:col-start-1 md:border-t-0 md:border-r"
+        >
+          <div
+            class="flex justify-around max-w-lg mx-auto md:flex-col md:max-w-none md:justify-start md:p-4 md:space-y-2"
+          >
+            <button
+              class="nav-btn active flex-1 flex flex-col items-center p-3 text-gray-400 md:flex-none md:flex-row md:justify-start md:space-x-3 md:rounded-lg md:hover:bg-gray-700"
+              data-page="dashboard"
+            >
+              <span class="text-2xl">📊</span>
+              <span class="text-xs font-medium md:text-sm">Dashboard</span>
+            </button>
+            <button
+              class="nav-btn flex-1 flex flex-col items-center p-3 text-gray-400 md:flex-none md:flex-row md:justify-start md:space-x-3 md:rounded-lg md:hover:bg-gray-700"
+              data-page="nabung"
+            >
+              <span class="text-2xl">💰</span>
+              <span class="text-xs font-medium md:text-sm">Nabung</span>
+            </button>
+            <button
+              class="nav-btn flex-1 flex flex-col items-center p-3 text-gray-400 md:flex-none md:flex-row md:justify-start md:space-x-3 md:rounded-lg md:hover:bg-gray-700"
+              data-page="pengeluaran"
+            >
+              <span class="text-2xl">🧾</span>
+              <span class="text-xs font-medium md:text-sm">Keluar</span>
+            </button>
+            <button
+              class="nav-btn flex-1 flex flex-col items-center p-3 text-gray-400 md:flex-none md:flex-row md:justify-start md:space-x-3 md:rounded-lg md:hover:bg-gray-700"
+              data-page="targets"
+            >
+              <span class="text-2xl">🎯</span>
+              <span class="text-xs font-medium md:text-sm">Target</span>
+            </button>
+            <button
+              class="nav-btn flex-1 flex flex-col items-center p-3 text-gray-400 md:flex-none md:flex-row md:justify-start md:space-x-3 md:rounded-lg md:hover:bg-gray-700"
+              data-page="riwayat"
+            >
+              <span class="text-2xl">📜</span>
+              <span class="text-xs font-medium md:text-sm">Riwayat</span>
+            </button>
+          </div>
+        </nav>
+
+        <div
+          class="content-container pb-24 md:pb-0 md:col-start-2 md:row-start-2 md:overflow-y-auto"
+        >
+          <div
+            class="container-inner p-4 space-y-6 md:max-w-4xl md:mx-auto md:p-8"
+          >
+            <div id="dashboard" class="page active space-y-6">
+              <div class="bg-gray-800 rounded-xl shadow-lg p-6">
+                <div class="flex justify-between items-center mb-4">
+                  <h3 class="text-sm font-medium text-gray-400">
+                    🏦 Saldo Utama
+                  </h3>
+                  <button
+                    id="btn-toggle-balance"
+                    class="text-gray-400 hover:text-cyan-400 text-xl"
+                  >
+                    👁️
+                  </button>
+                </div>
+                <div
+                  class="balance-amount text-4xl font-bold text-white mb-2"
+                  id="balance-display"
+                >
+                  Rp 0
+                </div>
+                <div class="balance-subtext text-sm text-gray-400 mb-6">
+                  Total tabungan kamu
+                </div>
+                <div class="quick-actions grid grid-cols-2 gap-4">
+                  <button
+                    id="btn-quick-nabung"
+                    class="bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105 flex items-center justify-center space-x-2"
+                  >
+                    <span>➕</span>
+                    <span>Nabung</span>
+                  </button>
+                  <button
+                    id="btn-quick-keluar"
+                    class="bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105 flex items-center justify-center space-x-2"
+                  >
+                    <span>➖</span>
+                    <span>Keluar</span>
+                  </button>
+                </div>
+              </div>
+
+              <div class="bg-gray-800 rounded-xl shadow-lg p-6">
+                <h4 class="text-lg font-semibold text-white mb-4">
+                  Ringkasan Keuangan
+                </h4>
+                <div class="grid grid-cols-2 gap-4 md:grid-cols-4">
+                  <div class="stat bg-gray-700 p-4 rounded-lg">
+                    <span class="text-sm text-gray-400">Total Nabung</span>
+                    <span
+                      class="text-lg font-bold text-green-400"
+                      id="total-nabung"
+                      >Rp 0</span
+                    >
+                  </div>
+                  <div class="stat bg-gray-700 p-4 rounded-lg">
+                    <span class="text-sm text-gray-400">Total Keluar</span>
+                    <span
+                      class="text-lg font-bold text-red-400"
+                      id="total-keluar"
+                      >Rp 0</span
+                    >
+                  </div>
+                  <div class="stat bg-gray-700 p-4 rounded-lg">
+                    <span class="text-sm text-gray-400">Rasio</span>
+                    <span
+                      class="text-lg font-bold text-yellow-400"
+                      id="rasio-keluar"
+                      >0%</span
+                    >
+                  </div>
+                  <div class="stat bg-gray-700 p-4 rounded-lg">
+                    <span class="text-sm text-gray-400">Status</span>
+                    <span
+                      class="text-lg font-bold text-white"
+                      id="status-keuangan"
+                      >-</span
+                    >
+                  </div>
+                </div>
+              </div>
+
+              <div class="bg-gray-800 rounded-xl shadow-lg p-6">
+                <div class="flex justify-between items-center mb-4">
+                  <h4 class="text-lg font-semibold text-white">
+                    Target Tabungan
+                  </h4>
+                  <button
+                    class="text-sm text-cyan-400 hover:text-cyan-300 font-medium"
+                    id="btn-dash-lihat-semua"
+                  >
+                    Lihat Semua →
+                  </button>
+                </div>
+                <div id="dashboard-targets" class="space-y-4"></div>
+              </div>
+            </div>
+
+            <div id="nabung" class="page space-y-6">
+              <h3 class="text-2xl font-bold text-white">
+                💸 Nabung (Uang Masuk)
+              </h3>
+              <div class="bg-gray-800 rounded-xl shadow-lg p-6">
+                <form id="nabung-form" class="space-y-4">
+                  <div class="form-group">
+                    <label class="block text-sm font-medium text-gray-300 mb-1"
+                      >Sumber Saldo</label
+                    >
+                    <select
+                      id="nabung-sumber"
+                      class="w-full bg-gray-700 border border-gray-600 text-gray-100 rounded-lg p-3 focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500"
+                      required
+                    >
+                      <option value="">Pilih sumber...</option>
+                      <option value="utama">🏦 Saldo Utama</option>
+                      <option value="target">🎯 Saldo Target</option>
+                    </select>
+                  </div>
+                  <div class="form-group hidden" id="target-select-group">
+                    <label class="block text-sm font-medium text-gray-300 mb-1"
+                      >Pilih Target</label
+                    >
+                    <select
+                      id="nabung-target"
+                      class="w-full bg-gray-700 border border-gray-600 text-gray-100 rounded-lg p-3 focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500"
+                    >
+                      <option value="">Pilih target...</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label class="block text-sm font-medium text-gray-300 mb-1"
+                      >Jumlah Uang</label
+                    >
+                    <input
+                      type="number"
+                      id="nabung-jumlah"
+                      class="w-full bg-gray-700 border border-gray-600 text-gray-100 rounded-lg p-3 focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500"
+                      placeholder="0"
+                      min="1"
+                      inputmode="numeric"
+                      required
+                    />
+                    <small
+                      id="format-nabung"
+                      class="text-sm text-gray-400 mt-1 h-4 block"
+                    ></small>
+                  </div>
+                  <div class="form-group">
+                    <label class="block text-sm font-medium text-gray-300 mb-1"
+                      >Catatan (Opsional)</label
+                    >
+                    <textarea
+                      id="nabung-catatan"
+                      class="w-full bg-gray-700 border border-gray-600 text-gray-100 rounded-lg p-3 focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500"
+                      placeholder="Misal: Uang gajian"
+                      maxlength="120"
+                    ></textarea>
+                    <small
+                      id="catatan-count"
+                      class="text-sm text-gray-400 mt-1 h-4 block"
+                      >0/120</small
+                    >
+                  </div>
+                  <button
+                    type="submit"
+                    class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg shadow-lg"
+                  >
+                    💾 Simpan Nabung
+                  </button>
+                </form>
+              </div>
+            </div>
+
+            <div id="pengeluaran" class="page space-y-6">
+              <h3 class="text-2xl font-bold text-white">
+                🧾 Catat Pengeluaran
+              </h3>
+              <div class="bg-gray-800 rounded-xl shadow-lg p-6">
+                <form id="pengeluaran-form" class="space-y-4">
+                  <div class="form-group">
+                    <label class="block text-sm font-medium text-gray-300 mb-1"
+                      >Sumber Saldo</label
+                    >
+                    <select
+                      id="pengeluaran-sumber"
+                      class="w-full bg-gray-700 border border-gray-600 text-gray-100 rounded-lg p-3 focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500"
+                      required
+                    >
+                      <option value="">Pilih sumber...</option>
+                      <option value="utama">🏦 Saldo Utama</option>
+                      <option value="target">🎯 Saldo Target</option>
+                    </select>
+                  </div>
+                  <div class="form-group hidden" id="pengeluaran-target-group">
+                    <label class="block text-sm font-medium text-gray-300 mb-1"
+                      >Pilih Target</label
+                    >
+                    <select
+                      id="pengeluaran-target"
+                      class="w-full bg-gray-700 border border-gray-600 text-gray-100 rounded-lg p-3 focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500"
+                    >
+                      <option value="">Pilih target...</option>
+                    </select>
+                    <div
+                      id="pengeluaran-target-info"
+                      class="mt-2 bg-yellow-900 border border-yellow-700 text-yellow-200 text-sm rounded-lg p-3 space-y-2"
+                    >
+                      <p>⚠️ <strong>Penarikan dari Target dibatasi:</strong></p>
+                      <ul class="list-disc list-inside">
+                        <li>Hanya bisa 1x per tahun.</li>
+                        <li>
+                          Jumlah penarikan adalah 30% dari saldo target saat
+                          ini.
+                        </li>
+                      </ul>
+                      <p
+                        id="pengeluaran-target-info-jumlah"
+                        class="font-bold text-lg text-center"
+                      ></p>
+                      <p
+                        id="pengeluaran-target-info-warning"
+                        class="text-red-400 font-semibold hidden"
+                      ></p>
+                    </div>
+                  </div>
+                  <div class="form-group" id="pengeluaran-jumlah-wrapper">
+                    <label class="block text-sm font-medium text-gray-300 mb-1"
+                      >Jumlah Pengeluaran</label
+                    >
+                    <input
+                      type="number"
+                      id="pengeluaran-jumlah"
+                      class="w-full bg-gray-700 border border-gray-600 text-gray-100 rounded-lg p-3 focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500"
+                      placeholder="0"
+                      min="1"
+                      inputmode="numeric"
+                      required
+                    />
+                    <small
+                      id="format-pengeluaran"
+                      class="text-sm text-gray-400 mt-1 h-4 block"
+                    ></small>
+                  </div>
+                  <div class="form-group">
+                    <label class="block text-sm font-medium text-gray-300 mb-1"
+                      >Catatan</label
+                    >
+                    <textarea
+                      id="pengeluaran-catatan"
+                      class="w-full bg-gray-700 border border-gray-600 text-gray-100 rounded-lg p-3 focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500"
+                      placeholder="Misal: Belanja makan"
+                      maxlength="120"
+                      required
+                    ></textarea>
+                    <small
+                      id="pengeluaran-catatan-count"
+                      class="text-sm text-gray-400 mt-1 h-4 block"
+                      >0/120</small
+                    >
+                  </div>
+                  <button
+                    type="submit"
+                    class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded-lg shadow-lg"
+                  >
+                    ✓ Catat Pengeluaran
+                  </button>
+                </form>
+              </div>
+            </div>
+
+            <div id="targets" class="page space-y-6">
+              <h3 class="text-2xl font-bold text-white">🎯 Kelola Target</h3>
+
+              <div class="bg-gray-800 rounded-xl shadow-lg p-6">
+                <h4 class="text-lg font-semibold text-white mb-4">
+                  Tambah Target Baru
+                </h4>
+                <form id="add-target-form" class="space-y-4">
+                  <div class="form-group">
+                    <label class="block text-sm font-medium text-gray-300 mb-1"
+                      >Nama Target</label
+                    >
+                    <input
+                      type="text"
+                      id="target-name"
+                      class="w-full bg-gray-700 border border-gray-600 text-gray-100 rounded-lg p-3 focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500"
+                      placeholder="Misal: Liburan ke Bali"
+                      required
+                    />
+                  </div>
+                  <div class="form-group">
+                    <label class="block text-sm font-medium text-gray-300 mb-1"
+                      >Nominal Target</label
+                    >
+                    <input
+                      type="number"
+                      id="target-nominal"
+                      class="w-full bg-gray-700 border border-gray-600 text-gray-100 rounded-lg p-3 focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500"
+                      placeholder="0"
+                      min="1"
+                      inputmode="numeric"
+                      required
+                    />
+                    <small
+                      id="format-target"
+                      class="text-sm text-gray-400 mt-1 h-4 block"
+                    ></small>
+                  </div>
+                  <button
+                    type="submit"
+                    class="w-full bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-3 px-4 rounded-lg shadow-lg"
+                  >
+                    ➕ Buat Target
+                  </button>
+                </form>
+              </div>
+
+              <div class="bg-gray-800 rounded-xl shadow-lg p-6">
+                <h4 class="text-lg font-semibold text-white mb-4">
+                  Daftar Target Kamu
+                </h4>
+                <div id="targets-list" class="space-y-4"></div>
+              </div>
+            </div>
+
+            <div id="riwayat" class="page space-y-6">
+              <h3 class="text-2xl font-bold text-white">
+                📜 Riwayat Transaksi
+              </h3>
+
+              <div class="flex border-b border-gray-700">
+                <button
+                  class="tab-btn active flex-1 py-3 text-center font-medium text-gray-400 border-b-2 border-transparent"
+                  data-tab="semua-history"
+                >
+                  Semua
+                </button>
+                <button
+                  class="tab-btn flex-1 py-3 text-center font-medium text-gray-400 border-b-2 border-transparent"
+                  data-tab="utama-history"
+                >
+                  Saldo Utama
+                </button>
+                <button
+                  class="tab-btn flex-1 py-3 text-center font-medium text-gray-400 border-b-2 border-transparent"
+                  data-tab="target-history"
+                >
+                  Target
+                </button>
+              </div>
+
+              <div id="semua-history" class="tab-content active">
+                <div class="bg-gray-800 rounded-xl shadow-lg p-4 md:p-6">
+                  <div id="semua-riwayat" class="space-y-3"></div>
+                </div>
+              </div>
+
+              <div id="utama-history" class="tab-content">
+                <div class="bg-gray-800 rounded-xl shadow-lg p-4 md:p-6">
+                  <div id="utama-riwayat" class="space-y-3"></div>
+                </div>
+              </div>
+
+              <div id="target-history" class="tab-content">
+                <div
+                  class="bg-gray-800 rounded-xl shadow-lg p-4 md:p-6 space-y-4"
+                >
+                  <select
+                    id="target-riwayat-selector"
+                    class="w-full bg-gray-700 border border-gray-600 text-gray-100 rounded-lg p-3 focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500"
+                  ></select>
+                  <div id="target-riwayat" class="space-y-3"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div
+      id="modal-confirm"
+      class="modal fixed inset-0 z-50 bg-black bg-opacity-75 items-center justify-center p-4"
+    >
+      <div
+        class="modal-content bg-gray-800 w-full max-w-md rounded-xl shadow-xl p-6 space-y-4"
+      >
+        <h2 id="modal-confirm-title" class="text-xl font-bold text-white">
+          Konfirmasi
+        </h2>
+        <p id="modal-confirm-message" class="text-gray-300">
+          Apakah Anda yakin?
+        </p>
+        <div class="grid grid-cols-2 gap-3 pt-2">
+          <button
+            type="button"
+            id="btn-confirm-cancel"
+            class="w-full bg-gray-600 hover:bg-gray-700 text-gray-200 font-medium py-2.5 px-4 rounded-lg shadow-md transition-colors"
+          >
+            Batal
+          </button>
+          <button
+            type="button"
+            id="btn-confirm-ok"
+            class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 px-4 rounded-lg shadow-md transition-colors"
+          >
+            Yakin
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div
+      id="toast"
+      class="toast fixed top-5 right-5 z-50 max-w-xs w-full bg-green-500 text-white p-4 rounded-lg shadow-xl"
+    >
+      <p id="toast-message">Toast message here</p>
+    </div>
+
+    <script type="module" src="app.js"></script>
+  </body>
+</html>
