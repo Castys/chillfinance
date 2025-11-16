@@ -105,6 +105,12 @@
           background-color: #374151; /* bg-gray-700 */
           color: #22d3ee; /* text-cyan-400 */
         }
+        #main-app {
+          display: grid;
+        }
+      }
+      #main-app.hidden {
+        display: none !important;
       }
 
       /* Status Tab */
@@ -260,7 +266,7 @@
 
       <div
         id="main-app"
-        class="hidden flex flex-col h-screen md:grid md:grid-cols-[260px_1fr] md:grid-rows-[auto_1fr]"
+        class="hidden flex flex-col h-screen md:grid-cols-[260px_1fr] md:grid-rows-[auto_1fr]"
       >
         <header
           class="bg-gray-900 sticky top-0 z-40 border-b border-gray-700 md:col-span-2"
