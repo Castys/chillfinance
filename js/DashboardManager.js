@@ -23,12 +23,21 @@ export class DashboardManager {
 
   updateBalance() {
     const balanceElement = document.getElementById("balance-display");
+    const iconOpen = document.getElementById("icon-eye-open");
+    const iconClosed = document.getElementById("icon-eye-closed");
+
     if (this.app.state.balanceVisible) {
+      // Tampilkan Saldo & Ikon Mata Terbuka
       balanceElement.textContent = Utils.formatRupiah(
         this.app.state.currentUser.saldo_utama
       );
+      iconOpen.classList.remove("hidden");
+      iconClosed.classList.add("hidden");
     } else {
+      // Sembunyikan Saldo & Tampilkan Ikon Mata Tertutup
       balanceElement.textContent = "••••••";
+      iconOpen.classList.add("hidden");
+      iconClosed.classList.remove("hidden");
     }
   }
 
