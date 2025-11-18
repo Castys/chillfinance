@@ -1,3 +1,5 @@
+// js/TargetManager.js
+
 import { Utils } from "./Utils.js";
 import { StorageManager } from "./StorageManager.js";
 
@@ -28,11 +30,21 @@ export class TargetManager {
           this.deleteTarget(this.currentDetailTarget);
         }
       });
+
+    // --- Listener untuk Ganti Nama ---
+    document
+      .getElementById("btn-show-rename")
+      ?.addEventListener("click", () => this.showRenameForm());
+    document
+      .getElementById("btn-cancel-rename")
+      ?.addEventListener("click", () => this.hideRenameForm());
+    document
+      .getElementById("btn-save-rename")
+      ?.addEventListener("click", () => this.handleRenameTarget());
   }
 
   // Mengisi <select> di hal. Nabung, Pengeluaran, dan Riwayat
   populateTargetSelects() {
-    // ... (Fungsi ini tidak berubah, biarkan apa adanya) ...
     const user = this.app.state.currentUser;
     if (!user) return;
 
@@ -69,7 +81,6 @@ export class TargetManager {
   }
 
   handleAddTarget(e) {
-    // ... (Fungsi ini tidak berubah, biarkan apa adanya) ...
     e.preventDefault();
     const name = document.getElementById("target-name").value.trim();
     const nominal = Utils.parseNominal(
@@ -125,10 +136,9 @@ export class TargetManager {
     }
 
     container.innerHTML = Object.entries(user.targets)
-      .map(([name, target]) => this.createTargetElement(name, target, false)) // PERUBAHAN: false (jangan tampilkan tombol hapus)
+      .map(([name, target]) => this.createTargetElement(name, target, false))
       .join("");
 
-    // PERUBAHAN: Tambahkan listener ke item target, bukan ke tombol hapus
     container.querySelectorAll(".target-item-clickable").forEach((item) => {
       item.addEventListener("click", (e) => {
         const targetName = e.currentTarget.dataset.targetName;
@@ -137,7 +147,6 @@ export class TargetManager {
     });
   }
 
-  // Helper untuk membuat elemen HTML target
   createTargetElement(name, target, showDeleteButton) {
     const percentage = Math.min(
       100,
@@ -155,7 +164,6 @@ export class TargetManager {
       `
       : "";
 
-    // PERUBAHAN: Tambahkan class 'target-item-clickable' dan 'data-target-name'
     return `
           <div class="target-item-clickable bg-gray-700 rounded-lg p-4 shadow flex items-center space-x-4" data-target-name="${name}">
               <div class="flex-grow">
@@ -179,7 +187,6 @@ export class TargetManager {
       `;
   }
 
-  // LOGIKA CANGGIH: Hapus Target (dengan Pindah Saldo)
   deleteTarget(targetName) {
     const user = this.app.state.currentUser;
     const tdata = user.targets[targetName];
@@ -207,7 +214,7 @@ export class TargetManager {
               saldoTarget
             )} dipindahkan & target dihapus.`
           );
-          this.showTargetList(); // PERUBAHAN: Kembali ke list
+          this.showTargetList();
           this.app.dashboard.updateDashboard();
         }
       );
@@ -219,23 +226,23 @@ export class TargetManager {
           delete user.targets[targetName];
           StorageManager.saveUserData(user);
           this.app.ui.showToast(`Target '${targetName}' dihapus.`);
-          this.showTargetList(); // PERUBAHAN: Kembali ke list
+          this.showTargetList();
           this.app.dashboard.updateDashboard();
         }
       );
     }
   }
 
-  // --- FUNGSI BARU UNTUK TUKAR VIEW ---
+  // --- FUNGSI TUKAR VIEW ---
 
-  /**
-   * Menampilkan view daftar semua target
-   */
   showTargetList() {
     document.getElementById("targets-list-view")?.classList.remove("hidden");
-    document.getElementById("target-detail-view")?.classList.add("hidden");
-    this.currentDetailTarget = null; // Reset target yg dilihat
-    this.renderTargets(); // Panggil renderTargets di sini
+    const detailView = document.getElementById("target-detail-view");
+    detailView?.classList.add("hidden");
+    detailView?.classList.remove("show-anim");
+    this.currentDetailTarget = null;
+    this.hideRenameForm(); // Sembunyikan form rename saat kembali ke list
+    this.renderTargets();
   }
 
   /**
@@ -243,6 +250,11 @@ export class TargetManager {
    * @param {string} targetName Nama target yang akan ditampilkan
    */
   showTargetDetail(targetName) {
+    // --- REVISI 1: BUG SCROLL-TO-TOP ---
+    // Panggil scroll-to-top di sini agar selalu ter-trigger
+    document.querySelector(".content-container")?.scrollTo(0, 0);
+    // --- SELESAI REVISI 1 ---
+
     this.currentDetailTarget = targetName; // Simpan nama target
     const user = this.app.state.currentUser;
     const targetData = user.targets[targetName];
@@ -253,26 +265,87 @@ export class TargetManager {
 
     // 1. Sembunyikan list, tampilkan detail
     document.getElementById("targets-list-view")?.classList.add("hidden");
-    document.getElementById("target-detail-view")?.classList.remove("hidden");
+    const detailView = document.getElementById("target-detail-view");
+    detailView?.classList.remove("hidden");
+    detailView?.classList.add("show-anim");
+    this.hideRenameForm(); // Pastikan form rename tersembunyi saat ganti target
 
     // 2. Isi data ke elemen detail
     document.getElementById(
       "detail-target-title"
     ).textContent = `Detail Target: ${targetName}`;
 
-    // 3. Render progress bar (gunakan ulang createTargetElement)
+    // 3. Render progress bar
     document.getElementById("detail-target-progress-bar").innerHTML =
       this.createTargetElement(targetName, targetData, false);
-    // Hapus fungsionalitas klik dari progress bar di hal detail
     document
       .querySelector("#detail-target-progress-bar .target-item-clickable")
       ?.classList.remove("target-item-clickable");
 
-    // 4. Render riwayat (gunakan ulang fungsi HistoryManager)
-    // Filter transaksi "Transfer"
+    // 4. Render riwayat
     const filteredTxs = targetData.riwayat.filter(
       (tx) => !tx[3].startsWith("Transfer dari target:")
     );
     this.app.history.renderGroupedHistory("detail-target-history", filteredTxs);
+  }
+
+  // --- FUNGSI RENAME ---
+
+  showRenameForm() {
+    if (!this.currentDetailTarget) return;
+    document
+      .getElementById("rename-target-input")
+      .setAttribute("value", this.currentDetailTarget); // Pakai setAttribute untuk nilai awal
+    document.getElementById("rename-target-form")?.classList.remove("hidden");
+    document.getElementById("btn-show-rename")?.classList.add("hidden");
+  }
+
+  hideRenameForm() {
+    document.getElementById("rename-target-form")?.classList.add("hidden");
+    document.getElementById("btn-show-rename")?.classList.remove("hidden");
+    document.getElementById("rename-target-input").value = "";
+  }
+
+  handleRenameTarget() {
+    const oldName = this.currentDetailTarget;
+    const newName = document.getElementById("rename-target-input").value.trim();
+    const user = this.app.state.currentUser;
+
+    if (!newName) {
+      this.app.ui.showToast("Nama baru tidak boleh kosong.", "error");
+      return;
+    }
+    if (newName === oldName) {
+      this.hideRenameForm();
+      return;
+    }
+    if (
+      Object.keys(user.targets).some(
+        (n) => n.toLowerCase() === newName.toLowerCase()
+      )
+    ) {
+      this.app.ui.showToast("Nama target tersebut sudah ada.", "error");
+      return;
+    }
+
+    // Logika rename: copy data, hapus yg lama, set yg baru
+    const data = user.targets[oldName];
+    delete user.targets[oldName];
+    user.targets[newName] = data;
+
+    StorageManager.saveUserData(user);
+
+    // --- REVISI 2: BUG UI NAMA LAMA ---
+    // Panggil ulang showTargetDetail dengan nama BARU
+    // Ini akan me-refresh judul DAN kartu progress bar
+    this.showTargetDetail(newName);
+    // --- SELESAI REVISI 2 ---
+
+    this.hideRenameForm(); // Pastikan form disembunyikan
+    this.app.ui.showToast("✅ Nama target berhasil diubah!");
+
+    // Update bagian lain dari aplikasi
+    this.app.dashboard.updateDashboard();
+    this.app.targets.populateTargetSelects();
   }
 }

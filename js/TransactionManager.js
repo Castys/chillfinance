@@ -1,3 +1,5 @@
+// js/TransactionManager.js
+
 import { Utils } from "./Utils.js";
 import { StorageManager } from "./StorageManager.js";
 
@@ -75,24 +77,43 @@ export class TransactionManager {
     } else {
       const targetName = document.getElementById("nabung-target").value;
       if (!targetName) {
-        this.app.ui.showToast("❌ Pilih target terlebih dahulu.", "error");
+        this.app.ui.showToast("Pilih target terlebih dahulu.", "error");
         return;
       }
 
       const target = user.targets[targetName];
       if (target.status === "selesai") {
         this.app.ui.showToast(
-          "❌ Target sudah selesai, tidak bisa menambah lagi.",
+          "Target sudah selesai, tidak bisa menambah lagi.",
           "error"
         );
         return;
       }
 
-      target.saldo += jumlah;
+      // --- REVISI LOGIKA NABUNG (STRICT) DIMULAI DI SINI ---
+      const saldo_sebelum = target.saldo;
+      const target_goal = target.target;
+      const saldo_baru_potensial = saldo_sebelum + jumlah;
+
+      // Skenario 1: Menabung MELEBIHI target (TOLAK)
+      if (saldo_baru_potensial > target_goal) {
+        const sisa_dibutuhkan = target_goal - saldo_sebelum;
+        this.app.ui.showToast(
+          `Nominal ( ${Utils.formatRupiah(
+            jumlah
+          )} ) terlalu besar. Target ini hanya butuh ${Utils.formatRupiah(
+            sisa_dibutuhkan
+          )} lagi. Transaksi dibatalkan.`,
+          "error"
+        );
+        return; // Batalkan transaksi
+      }
+
+      // Skenario 2: Menabung PAS atau KURANG (TERIMA)
+      target.saldo = saldo_baru_potensial;
       target.riwayat.push([tgl, "nabung", jumlah, catatan]);
 
-      if (target.saldo >= target.target) {
-        target.saldo = target.target;
+      if (target.saldo === target.target) {
         target.status = "selesai";
         this.app.ui.showToast(`🎉 Target '${targetName}' telah tercapai!`);
       } else {
@@ -100,6 +121,7 @@ export class TransactionManager {
           `✅ ${Utils.formatRupiah(jumlah)} ke target '${targetName}' berhasil!`
         );
       }
+      // --- REVISI LOGIKA NABUNG (STRICT) SELESAI ---
     }
 
     StorageManager.saveUserData(user);
@@ -112,6 +134,7 @@ export class TransactionManager {
   }
 
   // --- PENGELUARAN ---
+  // (Fungsi di bawah ini sudah benar logikanya, tidak diubah)
 
   handlePengeluaranSumberChange(sumber) {
     const targetGroup = document.getElementById("pengeluaran-target-group");
@@ -126,11 +149,8 @@ export class TransactionManager {
     targetGroup.classList.toggle("hidden", !isTarget);
     targetSelect.required = isTarget; // BUG FIX
 
-    // --- PERUBAHAN 1 ---
-    // Input jumlah sekarang selalu terlihat, tidak peduli sumbernya
     jumlahWrapper.classList.remove("hidden");
     document.getElementById("pengeluaran-jumlah").required = true;
-    // --- SELESAI PERUBAHAN 1 ---
 
     if (sumber === "utama") {
       infoEl.classList.add("hidden");
@@ -197,27 +217,23 @@ export class TransactionManager {
         bisaTarik = false;
         const sisaHari = 365 - diffDays;
         const nextDate = new Date(lastWd.setDate(lastWd.getDate() + 365));
-        infoWarningEl.textContent = `❌ Anda baru bisa menarik lagi dalam ${sisaHari} hari (setelah ${nextDate.toLocaleDateString(
+        infoWarningEl.textContent = `Anda baru bisa menarik lagi dalam ${sisaHari} hari (setelah ${nextDate.toLocaleDateString(
           "id-ID"
         )}).`;
         infoWarningEl.classList.remove("hidden");
       }
     }
 
-    // --- PERUBAHAN 2 ---
-    // Logika ini tetap menghitung 30%, tapi...
     const max_tarik = Math.floor(tdata.saldo * 0.3);
     if (max_tarik <= 0) {
       bisaTarik = false;
-      infoWarningEl.textContent = `❌ Saldo target tidak cukup untuk ditarik (Rp 0).`;
+      infoWarningEl.textContent = `Saldo target tidak cukup untuk ditarik (Rp 0).`;
       infoWarningEl.classList.remove("hidden");
     }
 
-    // ...teksnya diubah untuk memberitahu batas *maksimal*, bukan jumlah *pasti*
     infoJumlahEl.textContent = `Maks. penarikan: ${Utils.formatRupiah(
       max_tarik
     )} (30%)`;
-    // --- SELESAI PERUBAHAN 2 ---
 
     submitButton.disabled = !bisaTarik;
   }
@@ -238,8 +254,6 @@ export class TransactionManager {
       return;
     }
 
-    // --- PERUBAHAN 3.A ---
-    // Ambil 'jumlah' di luar blok IF, karena sekarang dipakai di kedua kondisi
     const jumlah = Utils.parseNominal(
       document.getElementById("pengeluaran-jumlah").value
     );
@@ -247,10 +261,8 @@ export class TransactionManager {
       this.app.ui.showToast("Jumlah pengeluaran harus lebih dari 0", "error");
       return;
     }
-    // --- SELESAI PERUBAHAN 3.A ---
 
     if (sumber === "utama") {
-      // Validasi 'jumlah <= 0' sudah dilakukan di atas
       if (jumlah > user.saldo_utama) {
         this.app.ui.showToast("Saldo utama tidak cukup!", "error");
         return;
@@ -265,14 +277,13 @@ export class TransactionManager {
       // sumber === 'target'
       const targetName = document.getElementById("pengeluaran-target").value;
       if (!targetName) {
-        this.app.ui.showToast("❌ Pilih target terlebih dahulu.", "error");
+        this.app.ui.showToast("Pilih target terlebih dahulu.", "error");
         return;
       }
 
       const tdata = user.targets[targetName];
       const now = new Date();
 
-      // (Validasi 1 tahun tetap ada)
       if (tdata.last_withdraw) {
         const diffDays = Math.ceil(
           (now - new Date(tdata.last_withdraw)) / (1000 * 60 * 60 * 24)
@@ -286,8 +297,6 @@ export class TransactionManager {
         }
       }
 
-      // --- PERUBAHAN 3.B ---
-      // Hitung batas 30%
       const max_tarik = Math.floor(tdata.saldo * 0.3);
 
       if (tdata.saldo <= 0 || max_tarik <= 0) {
@@ -298,10 +307,9 @@ export class TransactionManager {
         return;
       }
 
-      // Validasi BARU: Cek jika jumlah input melebihi batas 30%
       if (jumlah > max_tarik) {
         this.app.ui.showToast(
-          `❌ Penarikan (${Utils.formatRupiah(
+          `Penarikan (${Utils.formatRupiah(
             jumlah
           )}) melebihi batas 30% (${Utils.formatRupiah(max_tarik)}).`,
           "error"
@@ -309,8 +317,6 @@ export class TransactionManager {
         return;
       }
 
-      // Validasi BARU: Cek jika jumlah input melebihi total saldo target
-      // (Meskipun sudah dicakup max_tarik, ini validasi keamanan ganda)
       if (jumlah > tdata.saldo) {
         this.app.ui.showToast(
           "Saldo target tidak cukup untuk penarikan ini.",
@@ -319,18 +325,16 @@ export class TransactionManager {
         return;
       }
 
-      // Gunakan 'jumlah' (input pengguna) BUKAN 'max_tarik'
       tdata.saldo -= jumlah;
       tdata.last_withdraw = tgl;
       tdata.riwayat.push([tgl, "keluar", jumlah, catatan]);
-      if (tdata.status === "selesai") tdata.status = "aktif"; // Status kembali aktif
+      if (tdata.status === "selesai") tdata.status = "aktif";
 
       this.app.ui.showToast(
         `✅ Penarikan ${Utils.formatRupiah(
-          jumlah // <-- Gunakan 'jumlah'
+          jumlah
         )} dari '${targetName}' berhasil.`
       );
-      // --- SELESAI PERUBAHAN 3.B ---
     }
 
     StorageManager.saveUserData(user);
@@ -340,7 +344,6 @@ export class TransactionManager {
     document.getElementById("pengeluaran-catatan-count").textContent = "0/120";
     document.getElementById("pengeluaran-target-group").classList.add("hidden");
 
-    // Pastikan wrapper jumlah tetap terlihat (meskipun sudah di-handle oleh handlePengeluaranSumberChange)
     document
       .getElementById("pengeluaran-jumlah-wrapper")
       .classList.remove("hidden");

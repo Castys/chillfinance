@@ -1,3 +1,5 @@
+// js/UIManager.js
+
 import { Utils } from "./Utils.js";
 
 // ===============================
@@ -108,6 +110,11 @@ export class UIManager {
   }
 
   switchNavPage(pageId) {
+    // --- REVISI: SCROLL KE ATAS ---
+    // Pindahkan scroll ke atas di container konten utama
+    document.querySelector(".content-container")?.scrollTo(0, 0);
+    // --- SELESAI REVISI ---
+
     document.querySelectorAll(".page").forEach((page) => {
       page.classList.remove("active");
     });
@@ -122,7 +129,11 @@ export class UIManager {
 
     // Panggil render/update manager terkait
     if (pageId === "riwayat") this.app.history.renderRiwayat();
-    if (pageId === "targets") this.app.targets.showTargetList(); // PERUBAHAN DI SINI
+    // PERBAIKAN: Hanya panggil showTargetList jika kita *pindah* ke 'targets'
+    // Navigasi dari dashboard akan di-handle oleh DashboardManager
+    if (pageId === "targets" && !this.app.targets.currentDetailTarget) {
+      this.app.targets.showTargetList();
+    }
     if (pageId === "nabung") this.app.targets.populateTargetSelects();
     if (pageId === "pengeluaran") this.app.targets.populateTargetSelects();
   }

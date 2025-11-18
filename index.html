@@ -95,6 +95,23 @@
         }
       }
 
+      /* ... (letakkan di dalam <style>) ... */
+
+      @keyframes slideInFromRight {
+        from {
+          opacity: 0.5;
+          transform: translateX(30px);
+        }
+        to {
+          opacity: 1;
+          transform: translateX(0);
+        }
+      }
+      /* REVISI: Kelas animasi untuk view detail target */
+      #target-detail-view.show-anim {
+        animation: slideInFromRight 0.3s ease-out;
+      }
+
       /* Status Nav-btn (Mobile) */
       .nav-btn.active {
         color: #22d3ee; /* text-cyan-400 */
@@ -418,7 +435,7 @@
           class="content-container pb-24 md:pb-0 md:col-start-2 md:row-start-2 md:overflow-y-auto"
         >
           <div
-            class="container-inner p-4 space-y-6 md:max-w-4xl md:mx-auto md:p-8"
+            class="container-inner p-4 space-y-6 lg:max-w-6xl md:mx-auto md:p-8"
           >
             <div id="dashboard" class="page active space-y-6">
               <div class="bg-gray-800 rounded-xl shadow-lg p-6">
@@ -504,7 +521,7 @@
                 <h4 class="text-lg font-semibold text-white mb-4">
                   Ringkasan Keuangan
                 </h4>
-                <div class="grid grid-cols-2 gap-4 md:grid-cols-4">
+                <div class="grid sm:grid-cols-2 gap-4 md:grid-cols-4">
                   <div class="stat bg-gray-700 p-4 rounded-lg">
                     <div class="tooltip-container">
                       <span tabindex="0" class="tooltip-icon focus:outline-none"
@@ -847,12 +864,65 @@
                   <span>Kembali ke Daftar Target</span>
                 </button>
 
-                <h3
-                  id="detail-target-title"
-                  class="text-2xl font-bold text-white"
+                <div class="flex justify-between items-center">
+                  <h3
+                    id="detail-target-title"
+                    class="text-2xl font-bold text-white"
+                  >
+                    Detail Target
+                  </h3>
+                  <button
+                    id="btn-show-rename"
+                    class="text-gray-400 hover:text-cyan-400 p-2 rounded-lg"
+                    title="Ganti nama target"
+                  >
+                    <svg
+                      class="w-5 h-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.536L16.732 3.732z"
+                      ></path>
+                    </svg>
+                  </button>
+                </div>
+
+                <div
+                  id="rename-target-form"
+                  class="hidden bg-gray-800 rounded-xl shadow-lg p-6 space-y-3"
                 >
-                  Detail Target
-                </h3>
+                  <label
+                    for="rename-target-input"
+                    class="block text-sm font-medium text-gray-300"
+                    >Ganti Nama Target</label
+                  >
+                  <input
+                    type="text"
+                    id="rename-target-input"
+                    class="w-full bg-gray-700 border border-gray-600 text-gray-100 rounded-lg p-3 focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500"
+                    placeholder="Masukkan nama baru..."
+                  />
+                  <div class="grid grid-cols-2 gap-3 pt-2">
+                    <button
+                      id="btn-cancel-rename"
+                      class="w-full bg-gray-600 hover:bg-gray-700 text-gray-200 font-medium py-2.5 px-4 rounded-lg shadow-md transition-colors"
+                    >
+                      Batal
+                    </button>
+                    <button
+                      id="btn-save-rename"
+                      class="w-full bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-2.5 px-4 rounded-lg shadow-md transition-colors"
+                    >
+                      Simpan
+                    </button>
+                  </div>
+                </div>
 
                 <div class="bg-gray-800 rounded-xl shadow-lg p-6">
                   <h4 class="text-lg font-semibold text-white mb-4">

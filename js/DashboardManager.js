@@ -1,3 +1,5 @@
+// js/DashboardManager.js
+
 import { Utils } from "./Utils.js";
 
 // ===============================
@@ -100,5 +102,20 @@ export class DashboardManager {
         this.app.targets.createTargetElement(name, target, false)
       ) // Panggil helper dari TargetManager
       .join("");
+
+    // --- REVISI: Tambahkan listener untuk klik ---
+    container.querySelectorAll(".target-item-clickable").forEach((item) => {
+      item.addEventListener("click", (e) => {
+        const targetName = e.currentTarget.dataset.targetName;
+        if (!targetName) return;
+
+        // 1. Panggil fungsi detail dari TargetManager
+        this.app.targets.showTargetDetail(targetName);
+
+        // 2. Pindah halaman ke 'targets'
+        this.app.ui.switchNavPage("targets");
+      });
+    });
+    // --- SELESAI REVISI ---
   }
 }
