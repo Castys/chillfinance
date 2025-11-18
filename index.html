@@ -184,6 +184,15 @@
         display: block;
       }
       /* --- SELESAI CSS TOOLTIP --- */
+
+      /* --- CSS UNTUK TARGET LIST ITEM --- */
+      .target-item-clickable {
+        cursor: pointer;
+        transition: background-color 0.2s ease-out;
+      }
+      .target-item-clickable:hover {
+        background-color: #4b5563; /* bg-gray-600 */
+      }
     </style>
   </head>
   <body class="bg-gray-950 text-gray-100">
@@ -759,57 +768,125 @@
             </div>
 
             <div id="targets" class="page space-y-6">
-              <h3 class="text-2xl font-bold text-white">🎯 Kelola Target</h3>
+              <div id="targets-list-view" class="space-y-6">
+                <h3 class="text-2xl font-bold text-white">🎯 Kelola Target</h3>
 
-              <div class="bg-gray-800 rounded-xl shadow-lg p-6">
-                <h4 class="text-lg font-semibold text-white mb-4">
-                  Tambah Target Baru
-                </h4>
-                <form id="add-target-form" class="space-y-4">
-                  <div class="form-group">
-                    <label class="block text-sm font-medium text-gray-300 mb-1"
-                      >Nama Target</label
+                <div class="bg-gray-800 rounded-xl shadow-lg p-6">
+                  <h4 class="text-lg font-semibold text-white mb-4">
+                    Tambah Target Baru
+                  </h4>
+                  <form id="add-target-form" class="space-y-4">
+                    <div class="form-group">
+                      <label
+                        class="block text-sm font-medium text-gray-300 mb-1"
+                        >Nama Target</label
+                      >
+                      <input
+                        type="text"
+                        id="target-name"
+                        class="w-full bg-gray-700 border border-gray-600 text-gray-100 rounded-lg p-3 focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500"
+                        placeholder="Misal: Liburan ke Bali"
+                        required
+                      />
+                    </div>
+                    <div class="form-group">
+                      <label
+                        class="block text-sm font-medium text-gray-300 mb-1"
+                        >Nominal Target</label
+                      >
+                      <input
+                        type="number"
+                        id="target-nominal"
+                        class="w-full bg-gray-700 border border-gray-600 text-gray-100 rounded-lg p-3 focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500"
+                        placeholder="0"
+                        min="1"
+                        inputmode="numeric"
+                        required
+                      />
+                      <small
+                        id="format-target"
+                        class="text-sm text-gray-400 mt-1 h-4 block"
+                      ></small>
+                    </div>
+                    <button
+                      type="submit"
+                      class="w-full bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-3 px-4 rounded-lg shadow-lg"
                     >
-                    <input
-                      type="text"
-                      id="target-name"
-                      class="w-full bg-gray-700 border border-gray-600 text-gray-100 rounded-lg p-3 focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500"
-                      placeholder="Misal: Liburan ke Bali"
-                      required
-                    />
-                  </div>
-                  <div class="form-group">
-                    <label class="block text-sm font-medium text-gray-300 mb-1"
-                      >Nominal Target</label
-                    >
-                    <input
-                      type="number"
-                      id="target-nominal"
-                      class="w-full bg-gray-700 border border-gray-600 text-gray-100 rounded-lg p-3 focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500"
-                      placeholder="0"
-                      min="1"
-                      inputmode="numeric"
-                      required
-                    />
-                    <small
-                      id="format-target"
-                      class="text-sm text-gray-400 mt-1 h-4 block"
-                    ></small>
-                  </div>
-                  <button
-                    type="submit"
-                    class="w-full bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-3 px-4 rounded-lg shadow-lg"
-                  >
-                    ➕ Buat Target
-                  </button>
-                </form>
+                      ➕ Buat Target
+                    </button>
+                  </form>
+                </div>
+
+                <div class="bg-gray-800 rounded-xl shadow-lg p-6">
+                  <h4 class="text-lg font-semibold text-white mb-4">
+                    Daftar Target Kamu
+                  </h4>
+                  <div id="targets-list" class="space-y-4"></div>
+                </div>
               </div>
 
-              <div class="bg-gray-800 rounded-xl shadow-lg p-6">
-                <h4 class="text-lg font-semibold text-white mb-4">
-                  Daftar Target Kamu
-                </h4>
-                <div id="targets-list" class="space-y-4"></div>
+              <div id="target-detail-view" class="space-y-6 hidden">
+                <button
+                  id="btn-back-to-list"
+                  class="flex items-center space-x-2 text-cyan-400 hover:text-cyan-300 font-medium"
+                >
+                  <svg
+                    class="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M15 19l-7-7 7-7"
+                    ></path>
+                  </svg>
+                  <span>Kembali ke Daftar Target</span>
+                </button>
+
+                <h3
+                  id="detail-target-title"
+                  class="text-2xl font-bold text-white"
+                >
+                  Detail Target
+                </h3>
+
+                <div class="bg-gray-800 rounded-xl shadow-lg p-6">
+                  <h4 class="text-lg font-semibold text-white mb-4">
+                    Progress
+                  </h4>
+                  <div id="detail-target-progress-bar" class="space-y-4"></div>
+                </div>
+
+                <div class="bg-gray-800 rounded-xl shadow-lg p-4 md:p-6">
+                  <h4
+                    class="text-lg font-semibold text-white mb-4 px-2 md:px-0"
+                  >
+                    Riwayat Transaksi Target
+                  </h4>
+                  <div id="detail-target-history" class="space-y-3"></div>
+                </div>
+
+                <div
+                  class="bg-gray-800 rounded-xl shadow-lg p-6 border border-red-900/50"
+                >
+                  <h4 class="text-lg font-semibold text-red-400 mb-4">
+                    Zona Berbahaya
+                  </h4>
+                  <p class="text-gray-400 text-sm mb-4">
+                    Menghapus target akan memindahkan sisa saldo (jika ada) ke
+                    Saldo Utama Anda. Tindakan ini tidak dapat dibatalkan.
+                  </p>
+                  <button
+                    id="detail-target-delete-btn"
+                    class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded-lg shadow-lg"
+                  >
+                    🗑️ Hapus Target Ini
+                  </button>
+                </div>
               </div>
             </div>
 

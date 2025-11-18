@@ -122,7 +122,7 @@ export class UIManager {
 
     // Panggil render/update manager terkait
     if (pageId === "riwayat") this.app.history.renderRiwayat();
-    if (pageId === "targets") this.app.targets.renderTargets();
+    if (pageId === "targets") this.app.targets.showTargetList(); // PERUBAHAN DI SINI
     if (pageId === "nabung") this.app.targets.populateTargetSelects();
     if (pageId === "pengeluaran") this.app.targets.populateTargetSelects();
   }

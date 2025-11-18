@@ -7,16 +7,32 @@ import { StorageManager } from "./StorageManager.js";
 export class TargetManager {
   constructor(app) {
     this.app = app;
+    this.currentDetailTarget = null; // Menyimpan target yg sedang dilihat
   }
 
   init() {
     document
       .getElementById("add-target-form")
       ?.addEventListener("submit", (e) => this.handleAddTarget(e));
+
+    // Listener untuk tombol kembali
+    document
+      .getElementById("btn-back-to-list")
+      ?.addEventListener("click", () => this.showTargetList());
+
+    // Listener untuk tombol hapus di halaman detail
+    document
+      .getElementById("detail-target-delete-btn")
+      ?.addEventListener("click", () => {
+        if (this.currentDetailTarget) {
+          this.deleteTarget(this.currentDetailTarget);
+        }
+      });
   }
 
   // Mengisi <select> di hal. Nabung, Pengeluaran, dan Riwayat
   populateTargetSelects() {
+    // ... (Fungsi ini tidak berubah, biarkan apa adanya) ...
     const user = this.app.state.currentUser;
     if (!user) return;
 
@@ -53,6 +69,7 @@ export class TargetManager {
   }
 
   handleAddTarget(e) {
+    // ... (Fungsi ini tidak berubah, biarkan apa adanya) ...
     e.preventDefault();
     const name = document.getElementById("target-name").value.trim();
     const nominal = Utils.parseNominal(
@@ -92,7 +109,7 @@ export class TargetManager {
     this.app.ui.showToast(`✅ Target '${name}' berhasil dibuat!`);
     e.target.reset();
     document.getElementById("format-target").textContent = "";
-    this.renderTargets();
+    this.renderTargets(); // Tetap panggil renderTargets
     this.app.dashboard.updateDashboard();
   }
 
@@ -108,14 +125,14 @@ export class TargetManager {
     }
 
     container.innerHTML = Object.entries(user.targets)
-      .map(([name, target]) => this.createTargetElement(name, target, true)) // true = tampilkan tombol hapus
+      .map(([name, target]) => this.createTargetElement(name, target, false)) // PERUBAHAN: false (jangan tampilkan tombol hapus)
       .join("");
 
-    // Tambahkan listener ke tombol hapus yang baru dibuat
-    container.querySelectorAll(".btn-delete-target").forEach((button) => {
-      button.addEventListener("click", (e) => {
+    // PERUBAHAN: Tambahkan listener ke item target, bukan ke tombol hapus
+    container.querySelectorAll(".target-item-clickable").forEach((item) => {
+      item.addEventListener("click", (e) => {
         const targetName = e.currentTarget.dataset.targetName;
-        this.deleteTarget(targetName);
+        this.showTargetDetail(targetName);
       });
     });
   }
@@ -138,8 +155,9 @@ export class TargetManager {
       `
       : "";
 
+    // PERUBAHAN: Tambahkan class 'target-item-clickable' dan 'data-target-name'
     return `
-          <div class="bg-gray-700 rounded-lg p-4 shadow flex items-center space-x-4">
+          <div class="target-item-clickable bg-gray-700 rounded-lg p-4 shadow flex items-center space-x-4" data-target-name="${name}">
               <div class="flex-grow">
                   <div class="flex justify-between items-start mb-2">
                       <div>
@@ -189,7 +207,7 @@ export class TargetManager {
               saldoTarget
             )} dipindahkan & target dihapus.`
           );
-          this.renderTargets();
+          this.showTargetList(); // PERUBAHAN: Kembali ke list
           this.app.dashboard.updateDashboard();
         }
       );
@@ -201,10 +219,60 @@ export class TargetManager {
           delete user.targets[targetName];
           StorageManager.saveUserData(user);
           this.app.ui.showToast(`Target '${targetName}' dihapus.`);
-          this.renderTargets();
+          this.showTargetList(); // PERUBAHAN: Kembali ke list
           this.app.dashboard.updateDashboard();
         }
       );
     }
+  }
+
+  // --- FUNGSI BARU UNTUK TUKAR VIEW ---
+
+  /**
+   * Menampilkan view daftar semua target
+   */
+  showTargetList() {
+    document.getElementById("targets-list-view")?.classList.remove("hidden");
+    document.getElementById("target-detail-view")?.classList.add("hidden");
+    this.currentDetailTarget = null; // Reset target yg dilihat
+    this.renderTargets(); // Panggil renderTargets di sini
+  }
+
+  /**
+   * Menampilkan view detail untuk satu target
+   * @param {string} targetName Nama target yang akan ditampilkan
+   */
+  showTargetDetail(targetName) {
+    this.currentDetailTarget = targetName; // Simpan nama target
+    const user = this.app.state.currentUser;
+    const targetData = user.targets[targetName];
+    if (!targetData) {
+      this.app.ui.showToast("Target tidak ditemukan.", "error");
+      return;
+    }
+
+    // 1. Sembunyikan list, tampilkan detail
+    document.getElementById("targets-list-view")?.classList.add("hidden");
+    document.getElementById("target-detail-view")?.classList.remove("hidden");
+
+    // 2. Isi data ke elemen detail
+    document.getElementById(
+      "detail-target-title"
+    ).textContent = `Detail Target: ${targetName}`;
+
+    // 3. Render progress bar (gunakan ulang createTargetElement)
+    document.getElementById("detail-target-progress-bar").innerHTML =
+      this.createTargetElement(targetName, targetData, false);
+    // Hapus fungsionalitas klik dari progress bar di hal detail
+    document
+      .querySelector("#detail-target-progress-bar .target-item-clickable")
+      ?.classList.remove("target-item-clickable");
+
+    // 4. Render riwayat (gunakan ulang fungsi HistoryManager)
+    // Filter transaksi "Transfer"
+    const filteredTxs = targetData.riwayat.filter(
+      (tx) => !tx[3].startsWith("Transfer dari target:")
+    );
+    this.app.history.renderGroupedHistory("detail-target-history", filteredTxs);
   }
 }
