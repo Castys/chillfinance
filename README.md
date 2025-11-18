@@ -107,6 +107,7 @@ chillfinance-gemini/
 - Mengelola semua perubahan DOM yang _umum_ (tidak spesifik ke satu fitur).
 - **Tanggung Jawab:**
   - Navigasi halaman (`switchPage`, `switchNavPage`).
+  - Memastikan halaman "Target" selalu kembali ke tampilan daftar saat diakses.
   - Menampilkan/menyembunyikan aplikasi (`showApp`, `hideApp`).
   - Menampilkan _Toast_ (`showToast`) dan _Modal_ (`showConfirmModal`).
   - `init()`: Mendaftarkan _listener_ untuk tombol navigasi (`.nav-btn`), tombol modal, dan _helper_ input (format rupiah, penghitung karakter).
@@ -126,20 +127,21 @@ chillfinance-gemini/
 - Bertanggung jawab _hanya_ untuk me-render data di halaman Dashboard.
 - **Tanggung Jawab:**
   - `updateDashboard()`: Fungsi utama yang dipanggil untuk me-refresh data.
-  - `updateBalance()`: Mengurus logika _toggle_ saldo terlihat/tersembunyi.
+  - `updateBalance()`: Mengurus logika _toggle_ saldo (terlihat/tersembunyi) dan mengganti ikon mata (terbuka/tertutup).
   - `updateAnalytics()`: Menghitung dan menampilkan total nabung, keluar, dan rasio.
   - `renderDashboardTargets()`: Menampilkan 3 target teratas.
 
 ### `js/TargetManager.js`
 
 - **Peran:** Manajer Fitur Target.
-- Mengelola semua logika di halaman "Target" dan logika terkait target lainnya.
+- Mengelola semua logika di halaman "Target", termasuk menukar tampilan antara daftar target dan halaman detail target.
 - **Tanggung Jawab:**
-  - `init()`: Mendaftarkan _listener_ untuk form `#add-target-form`.
+  - `init()`: Mendaftarkan _listener_ untuk form `#add-target-form` dan tombol "Kembali" & "Hapus" di halaman detail.
   - Logika `handleAddTarget()` (membuat target baru).
-  - Logika `renderTargets()` (me-render _semua_ target di halaman Target).
+  - Logika `renderTargets()` (me-render _semua_ target di halaman daftar).
+  - Logika `showTargetDetail()` (menampilkan progress dan riwayat untuk satu target spesifik).
   - Logika `deleteTarget()` (termasuk logika **penting** memindahkan sisa saldo ke Saldo Utama).
-  - `populateTargetSelects()`: Fungsi bantuan yang dipanggil oleh Manajer lain untuk mengisi daftar target di form.
+  - `populateTargetSelects()`: Fungsi bantuan untuk mengisi daftar target di form.
 
 ### `js/TransactionManager.js`
 
@@ -148,8 +150,8 @@ chillfinance-gemini/
 - **Tanggung Jawab:**
   - `init()`: Mendaftarkan _listener_ untuk `#nabung-form` dan `#pengeluaran-form`.
   - Logika `handleNabung()`.
-  - Logika `handlePengeluaranSubmit()` (untuk Saldo Utama).
-  - Logika `updatePengeluaranTargetInfo()`: Logika canggih untuk penarikan target (validasi 1x/tahun, kalkulasi 30%).
+  - Logika `handlePengeluaranSubmit()` (untuk Saldo Utama dan validasi penarikan dari Saldo Target agar tidak melebihi 30%).
+  - Logika `updatePengeluaranTargetInfo()`: Logika canggih untuk penarikan target (validasi 1x/tahun, kalkulasi batas penarikan 30% dari saldo saat ini).
 
 ### `js/HistoryManager.js`
 
@@ -157,5 +159,5 @@ chillfinance-gemini/
 - Mengelola tampilan data di halaman "Riwayat".
 - **Tanggung Jawab:**
   - `init()`: Mendaftarkan _listener_ untuk tombol Tab (`.tab-btn`) dan _dropdown_ target (`#target-riwayat-selector`).
-  - `renderGroupedHistory()`: Logika utama untuk mengelompokkan transaksi berdasarkan tanggal (misal: "Jumat, 14 November 2025").
+  - `renderGroupedHistory()`: Logika utama untuk mengelompokkan transaksi berdasarkan tanggal (misal: "Jumat, 14 November 2025"). Fungsi ini juga dipakai oleh `TargetManager`.
   - `renderSemuaRiwayat()`, `renderUtamaRiwayat()`, `renderTargetRiwayat()`: Fungsi untuk memfilter dan menampilkan data sesuai tab yang aktif.
