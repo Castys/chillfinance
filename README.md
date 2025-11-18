@@ -1,4 +1,4 @@
-# Dokumentasi Arsitektur: ChillFinance-Gemini (Modular OOP)
+# Dokumentasi Arsitektur: ChillFinance (Modular OOP)
 
 ## Gambaran Umum
 
